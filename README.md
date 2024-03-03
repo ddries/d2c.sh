@@ -42,7 +42,6 @@ Usage: d2c.sh
 The configuration is done in `/etc/d2c/d2c.toml` in TOML format.
 Configuration file structure:
 
-```
 [api]
 zone-id = <zone id>
 api-key = <api key>
@@ -54,7 +53,6 @@ proxy = false
 [[dns]]
 name = test2.example.com
 proxy = true
-```
 
 ```
 
