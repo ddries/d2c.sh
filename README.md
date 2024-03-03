@@ -43,15 +43,15 @@ The configuration is done in `/etc/d2c/d2c.toml` in TOML format.
 Configuration file structure:
 
 [api]
-zone-id = <zone id>
-api-key = <api key>
+zone-id = "<zone id>"
+api-key = "<api key>"
 
 [[dns]]
-name = test.example.com
+name = "test.example.com"
 proxy = false
 
 [[dns]]
-name = test2.example.com
+name = "test2.example.com"
 proxy = true
 
 ```
