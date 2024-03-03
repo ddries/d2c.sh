@@ -1,0 +1,8 @@
+#! /bin/bash
+
+sudo chmod +x d2c.sh
+sudo cp d2c.sh /usr/local/bin
+
+echo "Successfully installed d2c.sh into /usr/local/bin."
+echo "Please, run d2c.sh from command-line before scheduling any cronjob."
+echo "Help: \`d2c.sh --help\` or \`d2c.sh -h\` or \`d2c.sh help\`."
