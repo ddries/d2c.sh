@@ -26,9 +26,37 @@ name = "dns2.example.com"
 proxy = false
 ```
 
-When d2c.sh is ran, it UPDATES the records configured in `/etc/d2c/d2c.toml` with the current public IP of the machine.
+When d2c.sh is ran, it UPDATES the records configured in `/etc/d2c/d2c.toml` with the current public IP of the machine. The A records be created from the Cloudflare dashboard, then d2c.sh will be able to UPDATE them with the public IP of the server.
 
 ### Usage
+
+```sh
+$ d2c.sh --help
+
+d2c (Dynamic Dns Cloudflare): Update the Cloudflare DNS A records for your dynamic IP.
+
+Usage: d2c.sh
+
+`d2c` UPDATES existing records. Please, create them in Cloudflare Dashboard before running this script.
+
+The configuration is done in `/etc/d2c/d2c.toml` in TOML format.
+Configuration file structure:
+
+```
+[api]
+zone-id = <zone id>
+api-key = <api key>
+
+[[dns]]
+name = test.example.com
+proxy = false
+
+[[dns]]
+name = test2.example.com
+proxy = true
+```
+
+```
 
 #### Method 1: Installing d2c.sh
 
