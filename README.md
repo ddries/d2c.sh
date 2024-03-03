@@ -14,15 +14,15 @@ Syntax:
 
 ```toml
 [api]
-zone-id = <your dns zone id>
-api-key = <your api key with dns records permissions>
+zone-id = # your dns zone id
+api-key = # your api key with dns records permissions
 
 [[dns]]
-name = dns1.example.com # dns name
+name = "dns1.example.com" # dns name
 proxy = true # proxied by cloudflare?
 
 [[dns]]
-name = dns2.examplecom
+name = "dns2.example.com"
 proxy = false
 ```
 
@@ -58,8 +58,8 @@ Fill `/etc/d2c/d2c.toml` with your zone id, API key and the desired DNS':
 $ sudo nano /etc/d2c/d2c.toml
 
 [api]
-zone-id = <zone id>
-api-key = <api key>
+zone-id = "aaa"
+api-key = "bbb"
 ...
 ```
 
