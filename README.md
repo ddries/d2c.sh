@@ -14,8 +14,8 @@ Syntax:
 
 ```toml
 [api]
-zone-id = # your dns zone id
-api-key = # your api key with dns records permissions
+zone-id = "aaa" # your dns zone id
+api-key = "bbb" # your api key with dns records permissions
 
 [[dns]]
 name = "dns1.example.com" # dns name
