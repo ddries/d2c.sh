@@ -76,7 +76,7 @@ existing_records_raw=`curl --silent --request GET \
     --url ${cloudflare_base}/zones/${zone_id}/dns_records \
     --header 'Content-Type: application/json' \
     --header "Authorization: Bearer ${api_key}" \
-    | yq -oj -I=0 '.result[] | select(.type == "A") | [.id, .name, .ttl]'
+    | yq -oj -I=0 '.result[] | select(.type == "A") | [.id, .name, .ttl, .content]'
 `
 
 # get records defined in config file
@@ -89,27 +89,32 @@ for record in ${existing_records_raw[@]}; do
     id=`yq '.[0]' <<< "${record}"`
     name=`yq '.[1]' <<< "${record}"`
     ttl=`yq '.[2]' <<< "${record}"`
+    content=`yq '.[3]' <<< "${record}"`
 
     for c_record in ${config_records[@]}; do
         c_name=`yq '.name' <<< ${c_record}`
         c_proxy=`yq '.proxy' <<< ${c_record}`
 
         if [ "$name" = "$c_name" ]; then
-            # update dns
-            curl --silent --request PATCH \
-            --url "${cloudflare_base}/zones/${zone_id}/dns_records/${id}" \
-            --header 'Content-Type: application/json' \
-            --header "Authorization: Bearer ${api_key}" \
-            --data '{
-                "content": "'${public_ip}'",
-                "name": "'${name}'",
-                "proxied": '${c_proxy}',
-                "type": "A",
-                "comment": "Managed by d2c.sh",
-                "ttl": '${ttl}'
-            }' > /dev/null
+            if [ "$public_ip" != "$content" ]; then
+                # update dns
+                curl --silent --request PATCH \
+                --url "${cloudflare_base}/zones/${zone_id}/dns_records/${id}" \
+                --header 'Content-Type: application/json' \
+                --header "Authorization: Bearer ${api_key}" \
+                --data '{
+                    "content": "'${public_ip}'",
+                    "name": "'${name}'",
+                    "proxied": '${c_proxy}',
+                    "type": "A",
+                    "comment": "Managed by d2c.sh",
+                    "ttl": '${ttl}'
+                }' > /dev/null
 
-            echo "[d2c.sh] OK: ${name}"
+                echo "[d2c.sh] OK: ${name}"
+            fi
+
+            echo "[d2c.sh] ${name} did not change"
         fi
     done
 done
