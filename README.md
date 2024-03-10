@@ -107,7 +107,7 @@ You can also execute d2c.sh avoiding the installation. Note that you must still 
 Execute from URL:
 
 ```sh
-$ bash <(curl -s https://www.driescode.dev/d2c.sh)
+$ bash <(curl -s https://raw.githubusercontent.com/ddries/d2c.sh/master/d2c.sh)
 
 [d2c.sh] OK: dns1.example.com
 [d2c.sh] OK: dns2.example.com
