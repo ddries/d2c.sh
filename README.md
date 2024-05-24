@@ -119,7 +119,7 @@ To run periodically without installing, you can write your own script:
 $ nano run_d2c.sh
 
 #!/bin/bash
-bash <(curl -s https://www.driescode.dev/d2c.sh)
+bash <(curl -s https://raw.githubusercontent.com/ddries/d2c.sh/master/d2c.sh)
 
 $ crontab -e # set cronjob to run periodically
 ```
