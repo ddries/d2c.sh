@@ -1,6 +1,7 @@
 #! /bin/bash
 
 sudo chmod +x d2c.sh
+sudo chmod +x d2c-multi.sh
 sudo cp d2c.sh /usr/local/bin
 
 echo "Successfully installed d2c.sh into /usr/local/bin."
