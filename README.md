@@ -59,7 +59,7 @@ Usage: d2c.sh
 
 `d2c` UPDATES existing records. Please, create them in Cloudflare Dashboard before running this script.
 
-The configuration is done in `/etc/d2c/d2c.toml` in TOML format.
+The configuration is done in `/etc/d2c/d2c*.toml` files in TOML format.
 Configuration file structure:
 
 [api]
