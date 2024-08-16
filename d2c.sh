@@ -1,9 +1,6 @@
 #! /bin/bash
 
 config_file_dir="/etc/d2c/"
-config_file_name="d2c.toml"
-config_file="${config_file_dir}${config_file_name}"
-
 cloudflare_base="https://api.cloudflare.com/client/v4"
 
 # print usage text and exit
@@ -15,7 +12,7 @@ print_usage() {
 
     `d2c` UPDATES existing records. Please, create them in Cloudflare Dashboard before running this script.
 
-    The configuration is done in `/etc/d2c/d2c.toml` in TOML format.
+    The configuration is done in `/etc/d2c/` in TOML format.
     Configuration file structure:
 
     ```
@@ -60,61 +57,68 @@ if [ ! -d $config_file_dir ]; then
     echo "Creating..."
     sudo mkdir $config_file_dir
     
-    echo "Created ${config_file_dir}. Please, fill ${config_file}."
+    echo "Created ${config_file_dir}. Please, fill the configuration files."
     exit 0
 fi
 
-# get my public ip
-public_ip=`curl --silent https://checkip.amazonaws.com/`
+# get my public IP
+public_ip=$(curl --silent https://checkip.amazonaws.com/)
 
-# read zone-id and api-key from config file
-zone_id=`yq '.api.zone-id' ${config_file}`
-api_key=`yq '.api.api-key' ${config_file}`
+# process each config file in sorted order
+for config_file in $(ls ${config_file_dir}d2c*.toml 2>/dev/null | sort -V); do
+    echo "Processing ${config_file}..."
 
-# get records from cloudflare
-existing_records_raw=`curl --silent --request GET \
-    --url ${cloudflare_base}/zones/${zone_id}/dns_records \
-    --header 'Content-Type: application/json' \
-    --header "Authorization: Bearer ${api_key}" \
-    | yq -oj -I=0 '.result[] | select(.type == "A") | [.id, .name, .ttl, .content]'
-`
+    # read zone-id and api-key from config file
+    zone_id=$(yq '.api.zone-id' ${config_file})
+    api_key=$(yq '.api.api-key' ${config_file})
 
-# get records defined in config file
-readarray config_records < <(yq -oj -I=0 '.dns[]' ${config_file})
+    # get records from Cloudflare
+    existing_records_raw=$(curl --silent --request GET \
+        --url ${cloudflare_base}/zones/${zone_id}/dns_records \
+        --header 'Content-Type: application/json' \
+        --header "Authorization: Bearer ${api_key}" \
+        | yq -oj -I=0 '.result[] | select(.type == "A") | [.id, .name, .ttl, .content]'
+    )
 
-# iterate cloudflare records
-# for each record, check if it exists in config file
-# if it does, update record
-for record in ${existing_records_raw[@]}; do
-    id=`yq '.[0]' <<< "${record}"`
-    name=`yq '.[1]' <<< "${record}"`
-    ttl=`yq '.[2]' <<< "${record}"`
-    content=`yq '.[3]' <<< "${record}"`
+    # get records defined in config file
+    readarray config_records < <(yq -oj -I=0 '.dns[]' ${config_file})
 
-    for c_record in ${config_records[@]}; do
-        c_name=`yq '.name' <<< ${c_record}`
-        c_proxy=`yq '.proxy' <<< ${c_record}`
+    # iterate Cloudflare records
+    # for each record, check if it exists in config file
+    # if it does, update the record
+    for record in ${existing_records_raw[@]}; do
+        id=$(yq '.[0]' <<< "${record}")
+        name=$(yq '.[1]' <<< "${record}")
+        ttl=$(yq '.[2]' <<< "${record}")
+        content=$(yq '.[3]' <<< "${record}")
 
-        if [ "$name" = "$c_name" ]; then
-            if [ "$public_ip" != "$content" ]; then
-                # update dns
-                curl --silent --request PATCH \
-                --url "${cloudflare_base}/zones/${zone_id}/dns_records/${id}" \
-                --header 'Content-Type: application/json' \
-                --header "Authorization: Bearer ${api_key}" \
-                --data '{
-                    "content": "'${public_ip}'",
-                    "name": "'${name}'",
-                    "proxied": '${c_proxy}',
-                    "type": "A",
-                    "comment": "Managed by d2c.sh",
-                    "ttl": '${ttl}'
-                }' > /dev/null
+        for c_record in ${config_records[@]}; do
+            c_name=$(yq '.name' <<< ${c_record})
+            c_proxy=$(yq '.proxy' <<< ${c_record})
 
-                echo "[d2c.sh] OK: ${name}"
+            if [ "$name" = "$c_name" ]; then
+                if [ "$public_ip" != "$content" ]; then
+                    # update DNS
+                    curl --silent --request PATCH \
+                    --url "${cloudflare_base}/zones/${zone_id}/dns_records/${id}" \
+                    --header 'Content-Type: application/json' \
+                    --header "Authorization: Bearer ${api_key}" \
+                    --data '{
+                        "content": "'${public_ip}'",
+                        "name": "'${name}'",
+                        "proxied": '${c_proxy}',
+                        "type": "A",
+                        "comment": "Managed by d2c.sh",
+                        "ttl": '${ttl}'
+                    }' > /dev/null
+
+                    echo "[d2c.sh] OK: ${name}"
+                else
+                    echo "[d2c.sh] ${name} did not change"
+                fi
             fi
-
-            echo "[d2c.sh] ${name} did not change"
-        fi
+        done
     done
 done
+
+echo "All files processed."

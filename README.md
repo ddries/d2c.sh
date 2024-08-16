@@ -8,25 +8,45 @@ d2c.sh (Dynamic DNS Cloudflare) is a very simple bash script to automatically up
 
 ### Configure
 
-d2c.sh is configured using a TOML file located in `/etc/d2c/d2c.toml`. The first time you run d2c.sh from the command-line, it will create the config directory for you. You still have to manually create the TOML configuration file.
+d2c.sh is configured using TOML files located in `/etc/d2c/`. The first time you run d2c.sh from the command-line, it will create the config directory for you. You will then need to manually create one or more TOML configuration files.
 
-Syntax:
 
+**Example configuration files:**
+
+
++ The script processes all files in `/etc/d2c/` that start with `d2c` and end with `.toml`.
+
+**`/etc/d2c/d2c.toml`:**
 ```toml
 [api]
-zone-id = "aaa" # your dns zone id
-api-key = "bbb" # your api key with dns records permissions
+zone-id = "aaa" # your DNS zone ID
+api-key = "bbb" # your API key with DNS records permissions
 
 [[dns]]
-name = "dns1.example.com" # dns name
-proxy = true # proxied by cloudflare?
+name = "dns1.example.com" # DNS name
+proxy = true # Proxied by Cloudflare?
 
 [[dns]]
 name = "dns2.example.com"
 proxy = false
 ```
 
-When d2c.sh is ran, it UPDATES the records configured in `/etc/d2c/d2c.toml` with the current public IP of the machine. The A records be created from the Cloudflare dashboard, then d2c.sh will be able to UPDATE them with the public IP of the server.
+**`/etc/d2c/d2c1.toml`:**
+```toml
+[api]
+zone-id = "ccc" # your second DNS zone ID
+api-key = "ddd" # your API key with DNS records permissions
+
+[[dns]]
+name = "dns3.example.com" # DNS name
+proxy = true # Proxied by Cloudflare?
+
+[[dns]]
+name = "dns4.example.com"
+proxy = false
+```
+
+When d2c.sh is run, it will process each `d2c*.toml TOML` file in the `/etc/d2c/` directory, updating the records configured in each with the current public IP of the machine. The A records should be created from the Cloudflare dashboard first; then d2c.sh will be able to UPDATE them with the server's public IP.
 
 ### Usage
 
@@ -78,7 +98,7 @@ Creating...
 Created /etc/d2c/. Please, fill /etc/d2c/d2c.toml.
 ```
 
-Fill `/etc/d2c/d2c.toml` with your zone id, API key and the desired DNS':
+Fill `/etc/d2c/d2c*.toml` file or files with your zone id, API key and the desired DNS':
 
 ```sh
 $ sudo nano /etc/d2c/d2c.toml
@@ -94,8 +114,10 @@ Finally, you can run manually d2c.sh or set up a cronjob to update periodically:
 ```sh
 $ d2c.sh # manually
 
-[d2c.sh] OK: dns1.example.com
-[d2c.sh] OK: dns2.example.com
+Processing /etc/d2c/d2c.toml...
+[d2c.sh] dns1.example-1.com did not change
+Processing /etc/d2c/d2c-1.toml...
+[d2c.sh] OK dns2.example-2.com
 
 $ crontab -e # set cronjob to run d2c.sh periodically
 ```
@@ -109,8 +131,10 @@ Execute from URL:
 ```sh
 $ bash <(curl -s https://raw.githubusercontent.com/ddries/d2c.sh/master/d2c.sh)
 
-[d2c.sh] OK: dns1.example.com
-[d2c.sh] OK: dns2.example.com
+Processing /etc/d2c/d2c.toml...
+[d2c.sh] dns1.example-1.com did not change
+Processing /etc/d2c/d2c-1.toml...
+[d2c.sh] OK dns2.example-2.com
 ```
 
 To run periodically without installing, you can write your own script:
