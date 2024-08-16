@@ -10,6 +10,7 @@ d2c.sh (Dynamic DNS Cloudflare) is a very simple bash script to automatically up
 
 d2c.sh is configured using TOML files located in `/etc/d2c/`. The first time you run d2c.sh from the command-line, it will create the config directory for you. You will then need to manually create one or more TOML configuration files.
 
++ Make sure to create separate API tokens for each domain in Cloudflare.
 
 **Example configuration files:**
 
