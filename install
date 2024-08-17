@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 sudo chmod +x d2c.sh
 sudo cp d2c.sh /usr/local/bin

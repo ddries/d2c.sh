@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 config_file_dir="/etc/d2c/"
 cloudflare_base="https://api.cloudflare.com/client/v4"
@@ -12,7 +12,7 @@ print_usage() {
 
     `d2c` UPDATES existing records. Please, create them in Cloudflare Dashboard before running this script.
 
-    The configuration is done in `/etc/d2c/d2c*.toml` files in TOML format.
+    The configuration is done in `/etc/d2c/*.toml` files in TOML format.
     Configuration file structure:
 
     ```
@@ -65,8 +65,8 @@ fi
 public_ip=$(curl --silent https://checkip.amazonaws.com/)
 
 # process each config file in sorted order
-for config_file in $(ls ${config_file_dir}d2c*.toml 2>/dev/null | sort -V); do
-    echo "Processing ${config_file}..."
+for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
+    echo "[d2c.sh] Processing ${config_file}..."
 
     # read zone-id and api-key from config file
     zone_id=$(yq '.api.zone-id' ${config_file})
