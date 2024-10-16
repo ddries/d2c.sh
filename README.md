@@ -33,7 +33,7 @@ proxy = false
 ipv6 = true
 ```
 
-When d2c.sh is run, it will process each `*.toml` TOML file in the `/etc/d2c/` directory, updating the records configured in each with the current public IP of the machine. The A / AAAA records must be created from the Cloudflare dashboard first; then d2c.sh will be able to update them with the server's public IP. Make sure to create the correct type of record (A or AAAA) according to the IP address you want to update, as d2c.sh will update the record type according to the IP address it finds.
+When d2c.sh is run, it will process each `*.toml` TOML file in the `/etc/d2c/` directory, updating the records configured in each with the current public IP of the machine. The A / AAAA records must be created from the Cloudflare dashboard first; then d2c.sh will be able to update them with the server's public IP. Make sure to create the correct type of record (A or AAAA) according to the IP address you want to update, as d2c.sh will update the record type according to the given DNS record type.
 
 ### Usage
 
