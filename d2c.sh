@@ -102,8 +102,8 @@ for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
         for c_record in ${config_records[@]}; do
             c_name=$(yq '.name' <<< ${c_record})
             c_proxy=$(yq '.proxy' <<< ${c_record})
-            c_ipv6=$(yq '.ipv6 // false' <<< ${c_record})
-            if [ "$ipv6" = true ]; then
+            c_ipv6=$(yq '.ipv6' <<< ${c_record})
+            if [ "$c_ipv6" = true ]; then
                 c_type="AAAA"
                 public_ip=$public_ipv6
             else
