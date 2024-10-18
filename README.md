@@ -1,10 +1,10 @@
 # d2c.sh
 
-Update Cloudflare DNS 'A' records for your dynamic IP.
+Update Cloudflare DNS 'A' and 'AAAA' records for your dynamic IP.
 
 ---
 
-d2c.sh (Dynamic DNS Cloudflare) is a very simple bash script to automatically update the IP address of A DNS records from Cloudflare.
+d2c.sh (Dynamic DNS Cloudflare) is a very simple bash script to automatically update the IP address of A and AAAA DNS records from Cloudflare.
 
 ### Configure
 
@@ -26,16 +26,21 @@ proxy = true              # Proxied by Cloudflare?
 [[dns]]
 name = "dns2.example.com"
 proxy = false
+
+[[dns]]
+name = "dns6.example.com"
+proxy = false
+ipv6 = true
 ```
 
-When d2c.sh is run, it will process each `*.toml` TOML file in the `/etc/d2c/` directory, updating the records configured in each with the current public IP of the machine. The A records must be created from the Cloudflare dashboard first; then d2c.sh will be able to update them with the server's public IP.
+When d2c.sh is run, it will process each `*.toml` TOML file in the `/etc/d2c/` directory, updating the records configured in each with the current public IP of the machine. The A / AAAA records must be created from the Cloudflare dashboard first; then d2c.sh will be able to update them with the server's public IP. Make sure to create the correct type of record (A or AAAA) according to IPv4 or IPv6, as d2c.sh will ignore misconfigured records.
 
 ### Usage
 
 ```sh
 $ d2c.sh --help
 
-d2c (Dynamic Dns Cloudflare): Update the Cloudflare DNS A records for your dynamic IP.
+d2c (Dynamic Dns Cloudflare): Update the Cloudflare DNS A and AAAA records for your dynamic IP.
 
 Usage: d2c.sh
 
@@ -55,6 +60,11 @@ proxy = false
 [[dns]]
 name = "test2.example.com"
 proxy = true
+
+[[dns]]
+name = "test-ipv6.example.com"
+proxy = false
+ipv6 = true # Optional, for AAAA records
 
 ```
 

@@ -6,7 +6,7 @@ cloudflare_base="https://api.cloudflare.com/client/v4"
 # print usage text and exit
 print_usage() {
     echo '
-    d2c (Dynamic DNS Cloudflare): Update Cloudflare DNS 'A' records for your dynamic IP.
+    d2c (Dynamic DNS Cloudflare): Update Cloudflare DNS 'A' and 'AAAA' records for your dynamic IP.
 
     Usage: d2c.sh
 
@@ -27,6 +27,11 @@ print_usage() {
     [[dns]]
     name = "test2.example.com"
     proxy = true
+
+    [[dns]]
+    name = "test-ipv6.example.com"
+    proxy = false
+    ipv6 = true # Optional, for 'AAAA' records
     ```
 '
 }
@@ -62,7 +67,8 @@ if [ ! -d $config_file_dir ]; then
 fi
 
 # get my public IP
-public_ip=$(curl --silent https://checkip.amazonaws.com/)
+public_ipv4=$(curl --silent https://checkip.amazonaws.com/)
+public_ipv6=$(curl --silent https://api64.ipify.org/)
 
 # process each config file in sorted order
 for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
@@ -77,7 +83,7 @@ for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
         --url ${cloudflare_base}/zones/${zone_id}/dns_records \
         --header 'Content-Type: application/json' \
         --header "Authorization: Bearer ${api_key}" \
-        | yq -oj -I=0 '.result[] | select(.type == "A") | [.id, .name, .ttl, .content]'
+        | yq -oj -I=0 '.result[] | select(.type == "A" or .type == "AAAA") | [.id, .name, .ttl, .content, .type]'
     )
 
     # get records defined in config file
@@ -91,12 +97,21 @@ for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
         name=$(yq '.[1]' <<< "${record}")
         ttl=$(yq '.[2]' <<< "${record}")
         content=$(yq '.[3]' <<< "${record}")
+        type=$(yq '.[4]' <<< "${record}")
 
         for c_record in ${config_records[@]}; do
             c_name=$(yq '.name' <<< ${c_record})
             c_proxy=$(yq '.proxy' <<< ${c_record})
+            c_ipv6=$(yq '.ipv6' <<< ${c_record})
+            if [ "$c_ipv6" = true ]; then
+                c_type="AAAA"
+                public_ip=$public_ipv6
+            else
+                c_type="A"
+                public_ip=$public_ipv4
+            fi
 
-            if [ "$name" = "$c_name" ]; then
+            if [ "$name" = "$c_name" ] && [ "$type" = "$c_type" ]; then
                 if [ "$public_ip" != "$content" ]; then
                     # update DNS
                     curl --silent --request PATCH \
@@ -107,7 +122,7 @@ for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
                         "content": "'${public_ip}'",
                         "name": "'${name}'",
                         "proxied": '${c_proxy}',
-                        "type": "A",
+                        "type": "'${c_type}'",
                         "comment": "Managed by d2c.sh",
                         "ttl": '${ttl}'
                     }' > /dev/null
