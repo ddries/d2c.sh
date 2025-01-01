@@ -1,0 +1,6 @@
+services:
+  d2c.sh:
+    build: .
+    container_name: d2c.sh
+    volumes:
+      - /config:/etc/d2c:ro

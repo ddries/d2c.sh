@@ -139,3 +139,11 @@ bash <(curl -s https://raw.githubusercontent.com/ddries/d2c.sh/master/d2c.sh)
 
 $ crontab -e # set cronjob to run periodically
 ```
+
+### Method 3: Docker
+
+To run this script in Docker, build the image with the Dockerfile in the repo.
+
+See `docker-compose.yml` for an example config.
+
+Note: you will need to find a way to run it periodically (e.g. [swarm-cronjob](https://github.com/crazy-max/swarm-cronjob) in Swarm mode).
