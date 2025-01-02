@@ -35,6 +35,11 @@ ipv6 = true
 
 When d2c.sh is run, it will process each `*.toml` TOML file in the `/etc/d2c/` directory, updating the records configured in each with the current public IP of the machine. The A / AAAA records must be created from the Cloudflare dashboard first; then d2c.sh will be able to update them with the server's public IP. Make sure to create the correct type of record (A or AAAA) according to IPv4 or IPv6, as d2c.sh will ignore misconfigured records.
 
+### Notifications
+
+If the `APPRISE_SIDECAR_URL` environment variable is set, a notification will be sent out to the
+specified [Apprise](https://github.com/caronc/apprise-api) service when a record is updated or if a failure is encountered.
+
 ### Usage
 
 ```sh
