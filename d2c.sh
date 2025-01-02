@@ -36,6 +36,14 @@ print_usage() {
 '
 }
 
+send_notification() {
+    if [[ "${APPRISE_SIDECAR_URL}" != "" ]]; then
+        status=$(curl --no-progress-meter -X POST -H "Content-Type: application/json" \
+            --data "{\"title\": \"$1\", \"body\": \"$2\", \"type\": \"$3\"}" "${APPRISE_SIDECAR_URL}")
+        echo "Sending notification: $status"
+    fi
+}
+
 # print usage if requested
 if [ "$1" = "help" ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
     print_usage
@@ -114,7 +122,7 @@ for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
             if [ "$name" = "$c_name" ] && [ "$type" = "$c_type" ]; then
                 if [ "$public_ip" != "$content" ]; then
                     # update DNS
-                    curl --silent --request PATCH \
+                    result_json=$(curl --no-progress-meter --request PATCH \
                     --url "${cloudflare_base}/zones/${zone_id}/dns_records/${id}" \
                     --header 'Content-Type: application/json' \
                     --header "Authorization: Bearer ${api_key}" \
@@ -125,9 +133,17 @@ for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
                         "type": "'${c_type}'",
                         "comment": "Managed by d2c.sh",
                         "ttl": '${ttl}'
-                    }' > /dev/null
+                    }')
+                    update_successful=$(echo "$result_json" | grep -o '"success": *[^,}]*' | awk -F':' '{print $2}')
 
-                    echo "[d2c.sh] OK: ${name}"
+                    if [ "$update_successful" == "true" ]; then
+                        echo "[d2c.sh] OK: ${name}"
+                        send_notification "[d2c.sh] DNS updated" "Updated successfully: ${name}" "success"
+                    else
+                        echo "[d2c.sh] Failure: ${name}"
+                        echo $result_json
+                        send_notification "[d2c.sh] DNS update error" "Failed to update: ${name}" "failure"
+                    fi
                 else
                     echo "[d2c.sh] ${name} did not change"
                 fi

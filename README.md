@@ -35,6 +35,11 @@ ipv6 = true
 
 When d2c.sh is run, it will process each `*.toml` TOML file in the `/etc/d2c/` directory, updating the records configured in each with the current public IP of the machine. The A / AAAA records must be created from the Cloudflare dashboard first; then d2c.sh will be able to update them with the server's public IP. Make sure to create the correct type of record (A or AAAA) according to IPv4 or IPv6, as d2c.sh will ignore misconfigured records.
 
+### Notifications
+
+If the `APPRISE_SIDECAR_URL` environment variable is set, a notification will be sent out to the
+specified [Apprise](https://github.com/caronc/apprise-api) service when a record is updated or if a failure is encountered.
+
 ### Usage
 
 ```sh
@@ -139,3 +144,11 @@ bash <(curl -s https://raw.githubusercontent.com/ddries/d2c.sh/master/d2c.sh)
 
 $ crontab -e # set cronjob to run periodically
 ```
+
+### Method 3: Docker
+
+To run this script in Docker, build the image with the Dockerfile in the repo.
+
+See `docker-compose.yml` for an example config.
+
+Note: you will need to find a way to run it periodically (e.g. [swarm-cronjob](https://github.com/crazy-max/swarm-cronjob) in Swarm mode).

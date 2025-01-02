@@ -1,0 +1,18 @@
+services:
+  d2c.sh:
+    build: .
+    container_name: d2c.sh
+    volumes:
+      - /config:/etc/d2c:ro
+    environment:
+      - APPRISE_SIDECAR_URL=http://apprise:8000/notify
+    depends_on:
+      - apprise
+
+  apprise:
+    image: caronc/apprise
+    container_name: apprise
+    environment:
+      - APPRISE_STATELESS_URLS=${DISCORD_WEBHOOK} # example
+      - APPRISE_STATEFUL_MODE=disabled
+      - APPRISE_WORKER_COUNT=1
