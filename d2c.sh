@@ -20,6 +20,10 @@ print_usage() {
     zone-id = "<zone id>"
     api-key = "<api key>"
 
+    [gotify]
+    enabled = "<true or false>"
+    endpoint = "<GOTIFY_IP_OR_HOSTNAME>"
+
     [[dns]]
     name = "test.example.com"
     proxy = false
@@ -78,6 +82,10 @@ for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
     zone_id=$(yq '.api.zone-id' ${config_file})
     api_key=$(yq '.api.api-key' ${config_file})
 
+    # read gotify config
+    gotify_enabled=$(yq '.gotify.enabled' ${config_file})
+    gotify_endpoint=$(yq '.gotify.endpoint' ${config_file})
+
     # get records from Cloudflare
     existing_records_raw=$(curl --silent --request GET \
         --url ${cloudflare_base}/zones/${zone_id}/dns_records \
@@ -128,6 +136,12 @@ for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
                     }' > /dev/null
 
                     echo "[d2c.sh] OK: ${name}"
+                        #check if gotify is enabled
+                        if [$gotify_enabled = "true"]; then
+                            #send changed ip notification
+                            curl "$gotify_endpoint" -F "title=Public IP has changed" -F "message=Your public IP has changed. Your new IP is $public_ip" -F "priority=5"
+                        else
+                        fi
                 else
                     echo "[d2c.sh] ${name} did not change"
                 fi
