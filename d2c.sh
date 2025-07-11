@@ -23,6 +23,7 @@ print_usage() {
     [gotify]
     enabled = "<true or false>"
     endpoint = "<GOTIFY_IP_OR_HOSTNAME>"
+    token = "<GOTIFY_APP_TOKEN>"
 
     [[dns]]
     name = "test.example.com"
@@ -85,6 +86,7 @@ for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
     # read gotify config
     gotify_enabled=$(yq '.gotify.enabled' ${config_file})
     gotify_endpoint=$(yq '.gotify.endpoint' ${config_file})
+    gotify_token=$(yq '.gotify.token' ${config_file})
 
     # get records from Cloudflare
     existing_records_raw=$(curl --silent --request GET \
@@ -137,10 +139,12 @@ for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
 
                     echo "[d2c.sh] OK: ${name}"
                         #check if gotify is enabled
-                        if [$gotify_enabled = "true"]; then
+                        if [ "$gotify_enabled" = true ]; then
                             #send changed ip notification
-                            curl "$gotify_endpoint" -F "title=Public IP has changed" -F "message=Your public IP has changed. Your new IP is $public_ip" -F "priority=5"
+                            curl --silent "${gotify_endpoint}/message?token=${gotify_token}" -F "title=Public IP has changed" -F "message=Your public IP for the record $name has changed. Your new IP is $public_ip" -F "priority=5"
+                            echo "[d2c.sh] Gotify notification sent: ${name}"
                         else
+                                echo "[d2c.sh] Gotify notification not sent: ${name}"
                         fi
                 else
                     echo "[d2c.sh] ${name} did not change"
