@@ -53,6 +53,11 @@ Configuration file structure:
 zone-id = "<zone id>"
 api-key = "<api key>"
 
+[gotify]
+enabled = "true"
+endpoint = "<http://gotify.example.com:port>"
+token = "<GOTIFY_APP_TOKEN>"
+
 [[dns]]
 name = "test.example.com"
 proxy = false
@@ -99,6 +104,16 @@ $ sudo nano /etc/d2c/d2c.toml
 zone-id = "aaa"
 api-key = "bbb"
 ...
+```
+If you want to use gotify, add the following parameters to the configuration file:
+
+```sh
+$ sudo nano /etc/d2c/d2c.toml
+
+[gotify]
+enabled = "true"
+endpoint = "<http://gotify.example.com:port>"
+token = "<GOTIFY_APP_TOKEN>"
 ```
 
 Finally, you can run manually d2c.sh or set up a cronjob to update periodically:
