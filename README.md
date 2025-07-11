@@ -19,6 +19,11 @@ Syntax:
 zone-id = "aaa" # your DNS zone ID
 api-key = "bbb" # your API key with DNS records permissions
 
+[gotify]
+enabled = "true" # set to true to enable support
+endpoint = "<http://gotify.example.com:port>" # your gotify endpoint. remember to use the http header and use port if diferent from 80.
+token = "<GOTIFY_APP_TOKEN>" # token created by gotify
+
 [[dns]]
 name = "dns1.example.com" # DNS name
 proxy = true              # Proxied by Cloudflare?
