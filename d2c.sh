@@ -78,6 +78,11 @@ for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
     zone_id=$(yq '.api.zone-id' ${config_file})
     api_key=$(yq '.api.api-key' ${config_file})
 
+    # read gotify config
+    gotify_enabled=$(yq '.gotify.enabled' ${config_file})
+    gotify_endpoint=$(yq '.gotify.endpoint' ${config_file})
+    gotify_token=$(yq '.gotify.token' ${config_file})
+
     # get records from Cloudflare
     existing_records_raw=$(curl --silent --request GET \
         --url ${cloudflare_base}/zones/${zone_id}/dns_records \
@@ -103,6 +108,7 @@ for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
             c_name=$(yq '.name' <<< ${c_record})
             c_proxy=$(yq '.proxy' <<< ${c_record})
             c_ipv6=$(yq '.ipv6' <<< ${c_record})
+
             if [ "$c_ipv6" = true ]; then
                 c_type="AAAA"
                 public_ip=$public_ipv6
@@ -128,6 +134,16 @@ for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
                     }' > /dev/null
 
                     echo "[d2c.sh] OK: ${name}"
+
+                    # check if gotify is enabled
+                    if [ "$gotify_enabled" = true ]; then
+                        # send changed ip notification
+                        status_code=$(curl --silent --output /dev/null --write-out "%{http_code}" "${gotify_endpoint}/message?token=${gotify_token}" -F "title=[d2c.sh] ${name} has changed" -F "message=Public IP for ${name} has changed (${public_ip})" -F "priority=5")
+
+                        if [[ "$status_code" -ne 200 ]]; then
+                            echo "[d2c.sh] Failed to sent Gotify notification"
+                        fi
+                    fi
                 else
                     echo "[d2c.sh] ${name} did not change"
                 fi

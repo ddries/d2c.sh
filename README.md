@@ -139,3 +139,22 @@ bash <(curl -s https://raw.githubusercontent.com/ddries/d2c.sh/master/d2c.sh)
 
 $ crontab -e # set cronjob to run periodically
 ```
+
+### Notification Support
+
+d2c.sh by default does not use any notification service, but the following are supported and can be enabled:
+- [Gotify](https://gotify.net/)
+- ...
+
+When DNS records are updated, d2c.sh will send a notification to enabled services. Feel free to submit a pull request to add more notification services.
+
+#### 1. Gotify
+
+To enable Gotify support, add the following configuration to your `toml` file:
+
+```toml
+[gotify]
+enabled = true
+endpoint = "http://gotify.example.com"
+token = "ccc"
+```
