@@ -20,11 +20,6 @@ print_usage() {
     zone-id = "<zone id>"
     api-key = "<api key>"
 
-    [gotify]
-    enabled = "<true or false>"
-    endpoint = "<GOTIFY_IP_OR_HOSTNAME>"
-    token = "<GOTIFY_APP_TOKEN>"
-
     [[dns]]
     name = "test.example.com"
     proxy = false
@@ -113,6 +108,7 @@ for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
             c_name=$(yq '.name' <<< ${c_record})
             c_proxy=$(yq '.proxy' <<< ${c_record})
             c_ipv6=$(yq '.ipv6' <<< ${c_record})
+
             if [ "$c_ipv6" = true ]; then
                 c_type="AAAA"
                 public_ip=$public_ipv6
@@ -138,14 +134,16 @@ for config_file in $(ls ${config_file_dir}*.toml 2>/dev/null | sort -V); do
                     }' > /dev/null
 
                     echo "[d2c.sh] OK: ${name}"
-                        #check if gotify is enabled
-                        if [ "$gotify_enabled" = true ]; then
-                            #send changed ip notification
-                            curl --silent "${gotify_endpoint}/message?token=${gotify_token}" -F "title=Public IP has changed" -F "message=Your public IP for the record $name has changed. Your new IP is $public_ip" -F "priority=5"
-                            echo "[d2c.sh] Gotify notification sent: ${name}"
-                        else
-                                echo "[d2c.sh] Gotify notification not sent: ${name}"
+
+                    # check if gotify is enabled
+                    if [ "$gotify_enabled" = true ]; then
+                        # send changed ip notification
+                        status_code=$(curl --silent --output /dev/null --write-out "%{http_code}" "${gotify_endpoint}/message?token=${gotify_token}" -F "title=[d2c.sh] ${name} has changed" -F "message=Public IP for ${name} has changed (${public_ip})" -F "priority=5")
+
+                        if [[ "$status_code" -ne 200 ]]; then
+                            echo "[d2c.sh] Failed to sent Gotify notification"
                         fi
+                    fi
                 else
                     echo "[d2c.sh] ${name} did not change"
                 fi
